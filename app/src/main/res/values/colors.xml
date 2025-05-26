@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="app_background">#ffffff</color>
+
+    <color name="app_statusBarColor">#93D1E0</color>
+    <color name="app_navigationBarColor">#DFE29D</color>
+
+    <color name="app_statusBarDarkColor">#1F2D30</color>
+    <color name="app_navigationBarDarkColor">#2C2C20</color>
+
+    <color name="app_textColor">#858585</color>
+    <color name="app_iconColor">#FFFFFF</color>
+
+    <color name="colorOn">#00ff00</color>
+    <color name="colorOff">#ff0000</color>
+    <color name="trackOn">#72BF72</color>
+    <color name="trackOff">#AD4242</color>
+</resources>

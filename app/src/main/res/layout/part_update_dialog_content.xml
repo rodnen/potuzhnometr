@@ -1,0 +1,62 @@
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/update_dialog"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#3F000000"
+    android:elevation="11dp"
+    android:visibility="gone">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/transparent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:elevation="1dp"
+            android:padding="10dp"
+            android:background="@drawable/list_element"
+            android:layout_centerInParent="true"
+            android:layout_margin="70dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Перевірка оновлень"
+                android:background="@android:color/transparent"
+                android:textColor="@color/white"
+                android:padding="10dp"
+                android:textSize="14sp"
+                android:textAlignment="center"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="У вас встановлена поточна або більш пізня версія"
+                android:background="@android:color/transparent"
+                android:textColor="@color/app_textColor"
+                android:textSize="12sp"
+                android:paddingHorizontal="10dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="5dp"
+                android:textAlignment="center"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Оновлення не потрібно"
+                android:background="@android:color/transparent"
+                android:textColor="@color/app_textColor"
+                android:textSize="12sp"
+                android:paddingHorizontal="10dp"
+                android:paddingBottom="10dp"
+                android:textAlignment="center"/>
+
+        </LinearLayout>
+
+    </RelativeLayout>
+
+</FrameLayout>

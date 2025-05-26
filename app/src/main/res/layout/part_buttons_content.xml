@@ -1,0 +1,77 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/modes"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:layout_below="@id/cardView_load"
+    android:layout_marginStart="16dp"
+    android:background="@android:color/transparent"
+    android:layout_toEndOf="@id/cardView_number">
+
+    <!-- Перша колонка (РЕЖИМ) -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:layout_gravity="end"
+        android:layout_marginBottom="12dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/mode_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:text="РЕЖИМ"
+            android:textAlignment="textEnd"
+            android:textColor="#6A6A6A"
+            android:textSize="10sp" />
+
+        <TextView
+            android:id="@+id/mode"
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/pm_button_background"
+            android:paddingHorizontal="13dp"
+            android:paddingVertical="10dp"
+            android:textAlignment="center"
+            android:text="@string/mode_1"
+            android:textColor="@color/app_textColor"
+            android:textSize="14sp" />
+    </LinearLayout>
+
+    <!-- Друга колонка (ЧУТЛИВІСТЬ) -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:layout_gravity="end"
+        android:layout_marginBottom="12dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/sensitivity_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:text="ЧУТЛИВІСТЬ"
+            android:textAlignment="textEnd"
+            android:textColor="#6A6A6A"
+            android:textSize="10sp" />
+
+        <TextView
+            android:id="@+id/sensitivity"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/pm_button_background"
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="10dp"
+            android:text="@string/sens_1"
+            android:textColor="@color/app_textColor"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+</LinearLayout>

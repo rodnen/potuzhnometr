@@ -1,0 +1,13 @@
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+
+    <!-- Фон, якщо потрібен -->
+    <gradient
+        android:startColor="#0B0B0B"
+        android:endColor="#121212"
+        android:angle="0"/>
+    <!-- Рамка -->
+    <stroke
+        android:width="1dp"
+        android:color="#262626" /> <!-- Колір бордера -->
+</shape>

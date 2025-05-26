@@ -1,0 +1,37 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Фон треку (тонший) -->
+    <item android:id="@android:id/background">
+        <shape android:shape="rectangle">
+            <size android:height="4dp" /> <!-- Зменшена висота -->
+            <solid android:color="#333333"/>
+            <corners android:radius="2dp"/>
+        </shape>
+    </item>
+
+    <!-- Вторинний прогрес -->
+    <item android:id="@android:id/secondaryProgress">
+        <clip>
+            <shape android:shape="rectangle">
+                <size android:height="4dp" /> <!-- Зменшена висота -->
+                <solid android:color="#AAAAAA"/>
+                <corners android:radius="2dp"/>
+            </shape>
+        </clip>
+    </item>
+
+    <!-- Основний прогрес -->
+    <item android:id="@android:id/progress">
+        <clip>
+            <shape android:shape="rectangle">
+                <size android:height="4dp" /> <!-- Зменшена висота -->
+                <gradient
+                    android:angle="0"
+                    android:startColor="#13FE01"
+                    android:centerColor="#FBE256"
+                    android:endColor="#FF0000"
+                    android:type="linear"/>
+                <corners android:radius="2dp"/>
+            </shape>
+        </clip>
+    </item>
+</layer-list>

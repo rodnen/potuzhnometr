@@ -1,0 +1,130 @@
+<!-- Контент Налаштувань -->
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/settings_content"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/transparent"
+    android:visibility="gone"
+    android:padding="24dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:background="@drawable/border_background">
+
+        <TextView
+            android:id="@+id/settings_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/text_title"
+            android:paddingHorizontal="5dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="18dp"
+            android:text="Налаштування"
+            android:textColor="@color/app_textColor"
+            android:textSize="17sp" />
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="20dp"/>
+
+        <!-- Налаштування для звуку повідомлень -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="10dp"
+            android:background="@drawable/list_element">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Звук попередження "
+                android:textSize="16sp"
+                android:layout_gravity="center_vertical"
+                android:background="@android:color/transparent"
+                android:textColor="@color/app_textColor"
+                android:layout_weight="1"/>
+            <Switch
+                android:id="@+id/switch_alert_sound"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="10dp"
+                android:track="@drawable/bg_track"
+                android:thumb="@drawable/ic_thumb"
+                tools:ignore="UseSwitchCompatOrMaterialXml" />
+        </LinearLayout>
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="10dp"/>
+
+        <!-- Налаштування для звуку сирени -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="10dp"
+            android:background="@drawable/list_element">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Звук сирени"
+                android:textSize="16sp"
+                android:layout_gravity="center_vertical"
+                android:background="@android:color/transparent"
+                android:textColor="@color/app_textColor"
+                android:layout_weight="1"/>
+            <Switch
+                android:id="@+id/switch_siren_sound"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="10dp"
+                android:track="@drawable/bg_track"
+                android:thumb="@drawable/ic_thumb"
+                tools:ignore="UseSwitchCompatOrMaterialXml" />
+        </LinearLayout>
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="10dp"/>
+
+        <!-- Налаштування для чутливості (значення 100) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="10dp"
+            android:background="@drawable/list_element">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Вибух потужнометра"
+                android:textSize="16sp"
+                android:layout_gravity="center_vertical"
+                android:background="@android:color/transparent"
+                android:textColor="@color/app_textColor"
+                android:layout_weight="1"/>
+            <Switch
+                android:id="@+id/switch_explosion"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="10dp"
+                android:track="@drawable/bg_track"
+                android:thumb="@drawable/ic_thumb"
+                tools:ignore="UseSwitchCompatOrMaterialXml" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+
+</RelativeLayout>

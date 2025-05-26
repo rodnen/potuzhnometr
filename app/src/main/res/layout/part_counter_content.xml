@@ -1,0 +1,81 @@
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cardView_load"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="0dp"
+    android:layout_marginVertical="16dp"
+    android:layout_below="@id/small_name"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="8dp"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent">
+
+    <RelativeLayout
+        android:id="@+id/contentLoad"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="14dp"
+        android:background="@drawable/border_background">
+
+        <!-- Верхні емодзі -->
+        <ImageView
+            android:id="@+id/emoji_start"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="14dp"
+            android:padding="6dp"
+            android:contentDescription="@+string/yawn emoji"
+            android:src="@drawable/yawn"
+            android:background = "@drawable/pm_icon_background"/>
+
+        <ImageView
+            android:id="@+id/emoji_end"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="14dp"
+            android:padding="6dp"
+            android:layout_alignParentEnd="true"
+            android:background = "@drawable/pm_icon_background"
+            android:contentDescription="@+string/skull emoji"
+            android:src="@drawable/skull" />
+
+        <!-- Смужки (можна замінити кастомними View) -->
+        <LinearLayout
+            android:id="@+id/bars_layout"
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:layout_below="@id/emoji_start"
+            android:layout_marginTop="24dp"
+            android:background="@drawable/loading_background"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/bars_layout"
+            android:padding="10dp"
+            android:textColor="@color/app_textColor"
+            android:background="@android:color/transparent"
+            android:textSize="11sp"
+            android:text="MIN" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/bars_layout"
+            android:layout_alignParentEnd="true"
+            android:padding="10dp"
+            android:textColor="@color/app_textColor"
+            android:background="@android:color/transparent"
+            android:textSize="11sp"
+            android:text="MAX"/>
+
+    </RelativeLayout>
+</androidx.cardview.widget.CardView>

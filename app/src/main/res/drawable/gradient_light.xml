@@ -1,0 +1,10 @@
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+
+    <!-- Фон, якщо потрібен -->
+    <gradient
+        android:startColor="@color/app_statusBarColor"
+        android:endColor="@color/app_navigationBarColor"
+        android:angle="270"/>
+
+</shape>
