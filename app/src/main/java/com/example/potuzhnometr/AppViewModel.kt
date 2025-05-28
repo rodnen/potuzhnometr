@@ -1,8 +1,10 @@
 package com.example.potuzhnometr
 
+import android.graphics.Color
 import android.media.MediaPlayer
 import android.os.Handler
 import android.os.Looper
+import androidx.core.graphics.toColorInt
 import androidx.lifecycle.ViewModel
 
 enum class ModeType (val value: Int) {
@@ -30,6 +32,7 @@ class AppViewModel : ViewModel() {
     // State variables
     var counter = 0
     var targetCounter = 0
+    var lastChangedColor = Color.TRANSPARENT
 
     // Mode and sensitivity
     var sensType = SensType.LOW

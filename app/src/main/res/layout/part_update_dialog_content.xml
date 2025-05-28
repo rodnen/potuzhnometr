@@ -1,10 +1,11 @@
-<FrameLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/update_dialog"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#3F000000"
     android:elevation="11dp"
+    android:alpha="0"
     android:visibility="gone">
 
     <RelativeLayout
@@ -13,6 +14,7 @@
         android:background="@android:color/transparent">
 
         <LinearLayout
+            android:id="@+id/update_dialog_content"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
@@ -32,27 +34,28 @@
                 android:textSize="14sp"
                 android:textAlignment="center"/>
 
+
+            <com.airbnb.lottie.LottieAnimationView
+                android:id="@+id/loadingAnimation"
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                android:layout_gravity="center"
+                app:lottie_autoPlay="false"
+                app:lottie_loop="false"
+                android:visibility="gone"
+                android:background="@android:color/transparent"
+                app:lottie_fileName="loading.json" />
+
             <TextView
+                android:id="@+id/update_msg"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="У вас встановлена поточна або більш пізня версія"
+                android:layout_height="0dp"
                 android:background="@android:color/transparent"
                 android:textColor="@color/app_textColor"
                 android:textSize="12sp"
                 android:paddingHorizontal="10dp"
                 android:paddingTop="8dp"
                 android:paddingBottom="5dp"
-                android:textAlignment="center"/>
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Оновлення не потрібно"
-                android:background="@android:color/transparent"
-                android:textColor="@color/app_textColor"
-                android:textSize="12sp"
-                android:paddingHorizontal="10dp"
-                android:paddingBottom="10dp"
                 android:textAlignment="center"/>
 
         </LinearLayout>

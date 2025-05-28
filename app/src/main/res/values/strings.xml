@@ -12,4 +12,6 @@
     <string name="sens_2">×1.5</string>
     <string name="sens_3">×2.0</string>
     <string name="sens_4">×2.5</string>
+
+    <string name="upd_def_msg">У вас встановлена поточна або більш пізня версія.\n\nОновлення не потрібно</string>
 </resources>

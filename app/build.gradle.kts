@@ -1,3 +1,5 @@
+import com.android.build.gradle.internal.api.BaseVariantOutputImpl
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -12,7 +14,7 @@ android {
         minSdk = 24
         targetSdk = 35
         versionCode = 1
-        versionName = "1.3.5"
+        versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -30,6 +32,23 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
+    applicationVariants.configureEach {
+        val appName = "Potuzhnometr"
+        val vName = versionName
+        val bType = buildType.name
+
+        outputs.configureEach {
+            val apkOutput = this as BaseVariantOutputImpl
+            if (bType == "release") {
+                apkOutput.outputFileName = "${appName}_App_v${vName}.apk"
+            }
+            if (bType == "debug") {
+                apkOutput.outputFileName = "${appName}_AppDev_v${vName}.apk"
+            }
+        }
+    }
+
     kotlinOptions {
         jvmTarget = "11"
     }
@@ -37,6 +56,8 @@ android {
 
 dependencies {
 
+    implementation(libs.lottie)
+    implementation (libs.gson)
     implementation (libs.okhttp)
     implementation(libs.androidx.lifecycle.process)
     implementation (libs.androidx.lifecycle.runtime)
@@ -46,6 +67,7 @@ dependencies {
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.media3.common.ktx)
+    implementation(libs.cronet.embedded)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

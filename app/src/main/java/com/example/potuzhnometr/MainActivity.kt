@@ -13,6 +13,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
@@ -39,11 +40,18 @@ import kotlin.math.min
 import kotlin.math.max
 import androidx.core.view.isVisible
 import androidx.activity.viewModels
+import com.airbnb.lottie.LottieAnimationView
+import com.example.potuzhnometr.counter.CounterManager
+import com.example.potuzhnometr.ui.UIAnimator
+import com.example.potuzhnometr.updater.UpdateChecker
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 class MainActivity : AppCompatActivity(){
+    private lateinit var counterManager: CounterManager
+    private lateinit var uiAnimator: UIAnimator
+
     private val viewModel: AppViewModel by viewModels()
     private val barViews = mutableListOf<View>()
 
@@ -90,7 +98,7 @@ class MainActivity : AppCompatActivity(){
     private lateinit var image: ImageView
     private lateinit var sensButton: TextView
     private lateinit var modeButton: TextView
-    private lateinit var videoContainer: FrameLayout
+    private lateinit var videoContainer: RelativeLayout
     private lateinit var seekBar: SeekBar
     private lateinit var seekbarContainer: LinearLayout
 
@@ -106,19 +114,20 @@ class MainActivity : AppCompatActivity(){
 
     // Info
     private lateinit var infoContent: RelativeLayout
-    private lateinit var infoButton :ImageView
-    private lateinit var versionText : TextView
-    private lateinit var checkUpdButton : RelativeLayout
-    private lateinit var updateDialog : FrameLayout
+    private lateinit var infoButton: ImageView
+    private lateinit var versionText: TextView
+    private lateinit var checkUpdButton: RelativeLayout
+    private lateinit var updateDialog: FrameLayout
+    private lateinit var updateMsg: TextView
 
     // Animation
-    private val colorAnimator by lazy { createColorAnimator() }
-    private val videoEnterAnimator by lazy { createVideoEnterAnimator() }
+    private lateinit var colorAnimator : ValueAnimator
+    private lateinit var videoEnterAnimator : ValueAnimator
+    private lateinit var loadingAnimation: LottieAnimationView
 
     // State
     private var isBeingClosed = false
     private var backPressedOnce = false
-    private var alreadyClicked = false
     private val backPressHandler = Handler(Looper.getMainLooper())
 
     @RequiresApi(Build.VERSION_CODES.Q)
@@ -131,6 +140,8 @@ class MainActivity : AppCompatActivity(){
         setupWindow()
 
         initViews()
+        initCounterManager()
+        initUIAnimator()
         initBars()
         initCards()
         initSwitches()
@@ -186,62 +197,16 @@ class MainActivity : AppCompatActivity(){
         setupUpdateButton()
     }
 
+    @SuppressLint("SetTextI18n")
     private fun setupVersion() {
         val packageInfo = packageManager.getPackageInfo(packageName, 0)
 
         val version = packageInfo.versionName
         val lastUpdateTime = packageInfo.lastUpdateTime
 
-        val formattedDate = SimpleDateFormat("d MMMM yyyy, HH:mm", Locale.getDefault()).format(Date(lastUpdateTime))
+        val formattedDate =
+            SimpleDateFormat("d MMMM yyyy, HH:mm", Locale.getDefault()).format(Date(lastUpdateTime))
         versionText.text = "Версія: $version (${formattedDate})"
-    }
-
-    private fun createColorAnimator(): ValueAnimator {
-        return ValueAnimator.ofObject(ArgbEvaluator(), "#EE4848".toColorInt(), "#630808".toColorInt()).apply {
-            duration = 500
-            repeatCount = ValueAnimator.INFINITE
-            repeatMode = ValueAnimator.REVERSE
-            addUpdateListener { animator ->
-                val color = animator.animatedValue as Int
-                screenLayout.setBackgroundColor(color)
-                window.statusBarColor = color
-                window.navigationBarColor = color
-            }
-        }
-    }
-
-    private fun createVideoEnterAnimator(): ValueAnimator {
-        val animationDuration = 300L
-        return ValueAnimator.ofObject(
-            ArgbEvaluator(),
-            ContextCompat.getColor(this, R.color.app_statusBarColor),
-            Color.BLACK
-        ).apply {
-            duration = animationDuration
-            interpolator = android.view.animation.AccelerateDecelerateInterpolator()
-
-            addUpdateListener { animator ->
-                val color = animator.animatedValue as Int
-                screenLayout.setBackgroundColor(color)
-                window.statusBarColor = color
-                window.navigationBarColor = color
-            }
-
-            addListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationStart(animation: Animator) {
-                    videoContainer.visibility = View.INVISIBLE
-                }
-
-                @RequiresApi(Build.VERSION_CODES.Q)
-                override fun onAnimationEnd(animation: Animator) {
-                    videoContainer.visibility = View.VISIBLE
-                    viewModel.handler.postDelayed({
-                        startVideoPlayback(R.raw.explosion)
-                        playExplosionSound()
-                    }, animationDuration)
-                }
-            })
-        }
     }
 
     override fun onUserLeaveHint() {
@@ -289,17 +254,10 @@ class MainActivity : AppCompatActivity(){
     }
 
     private fun restoreSettings() {
-        stopRunnables()
+        counterManager.stopAll()
         AppData.stopAudio()
 
         updateUI()
-    }
-
-    private fun stopRunnables() {
-        viewModel.handler.removeCallbacks(incrementRunnable)
-        viewModel.handler.removeCallbacks(decrementRunnable)
-        viewModel.handler.removeCallbacks(randomRunnable)
-        viewModel.handler.removeCallbacks(incrementRunnable)
     }
 
 
@@ -325,18 +283,28 @@ class MainActivity : AppCompatActivity(){
         updateUI()
     }
 
-    private fun checkTheme() {
-        val currentNightMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+    private fun checkForUpdates() {
+        uiAnimator.startLoadingAnimation()
+        uiAnimator.showUpdateDialog()
 
-        when (currentNightMode) {
-            Configuration.UI_MODE_NIGHT_YES -> {
-                viewModel.isDarkTheme = true
+        UpdateChecker(
+            context = this,
+            onUpdateAvailable = { latestVersion ->
+                runOnUiThread {
+                    uiAnimator.showUpdateMessage("Доступна нова версія: $latestVersion")
+                }
+            },
+            onUpToDate = { message ->
+                runOnUiThread {
+                    uiAnimator.showUpdateMessage(message)
+                }
+            },
+            onError = { errorMessage ->
+                runOnUiThread {
+                    uiAnimator.showUpdateMessage(errorMessage)
+                }
             }
-
-            Configuration.UI_MODE_NIGHT_NO -> {
-                viewModel.isDarkTheme = false
-            }
-        }
+        ).check()
     }
 
     private fun initViews() {
@@ -366,6 +334,47 @@ class MainActivity : AppCompatActivity(){
         versionText = findViewById(R.id.version)
         updateDialog = findViewById(R.id.update_dialog)
         checkUpdButton = findViewById(R.id.check_updates)
+        updateMsg = findViewById(R.id.update_msg)
+        loadingAnimation = findViewById(R.id.loadingAnimation)
+    }
+
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private fun initUIAnimator() {
+        uiAnimator = UIAnimator(
+            viewModel = viewModel,
+            activity = this,
+            screenLayout = screenLayout,
+            window = window,
+            hiddenPanel = hiddenPanel,
+            seekbarContainer = seekbarContainer,
+            videoContainer = videoContainer,
+            loadingAnimation = loadingAnimation,
+            updateDialog = updateDialog,
+            updateMsg = updateMsg
+        )
+        colorAnimator = uiAnimator.createColorAnimator()
+        videoEnterAnimator = uiAnimator.createVideoEnterAnimator {
+            viewModel.handler.postDelayed({
+                startVideoPlayback(R.raw.explosion)
+                playExplosionSound()
+            }, 300)
+        }
+    }
+
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private fun initCounterManager() {
+        counterManager = CounterManager(
+            viewModel = viewModel,
+            powerText = powerText,
+            updateUI = ::updateUI,
+            resetAfterRelease = ::resetAfterRelease,
+            playAlertAndExplode = ::playAlertAndExplode,
+            incrementSpeed = INCREMENT_SPEED,
+            decrementSpeed = DECREMENT_SPEED,
+            randomSpeed = RANDOM_SPEED
+        )
     }
 
     private fun initCards() {
@@ -388,15 +397,6 @@ class MainActivity : AppCompatActivity(){
     }
 
     private fun initSwitches() {
-        /*switchDarkTheme.setOnCheckedChangeListener { buttonView, isChecked ->
-            if (isChecked) {
-                isDarkTheme = true
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-            } else {
-                isDarkTheme = false
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-            }
-        }*/
 
         switchAlertSound.setOnCheckedChangeListener { buttonView, isChecked ->
             if (isChecked) {
@@ -463,25 +463,7 @@ class MainActivity : AppCompatActivity(){
             drawable.setColor(if (isActive) activeColors[i] else notActiveColor)
 
             // Анімація для активних елементів
-            if (isActive) {
-                view.animate()
-                    .scaleX(1.2f)  // Збільшення по ширині на 20%
-                    .scaleY(1.2f)  // Збільшення по висоті на 20%
-                    .setDuration(150)
-                    .withEndAction {
-                        // Плавне повернення до нормального розміру
-                        view.animate()
-                            .scaleX(1f)
-                            .scaleY(1f)
-                            .setDuration(100)
-                            .start()
-                    }
-                    .start()
-            } else {
-                // Скидання анімації для неактивних
-                view.scaleX = 1f
-                view.scaleY = 1f
-            }
+            uiAnimator.playBarAnimation(view, isActive)
 
         }
 
@@ -494,134 +476,25 @@ class MainActivity : AppCompatActivity(){
         }
     }
 
-    private fun showHiddenPanel(){
-        hiddenPanel.visibility = View.VISIBLE
-        hiddenPanel.alpha = 0f
-        hiddenPanel.animate().alpha(1f).setDuration(200).start()
-
-        ValueAnimator.ofObject(
-            ArgbEvaluator(),
-            ContextCompat.getColor(this, R.color.app_statusBarColor),
-            ContextCompat.getColor(this, R.color.app_statusBarDarkColor)
-        ).apply {
-            duration = 200L // Тривалість анімації 200 мс
-            addUpdateListener { animator ->
-                val color = animator.animatedValue as Int
-
-                // Оновлюємо статус бар
-                window.statusBarColor = color
-            }
-        }.start()
-
-        ValueAnimator.ofObject(
-            ArgbEvaluator(),
-            ContextCompat.getColor(this, R.color.app_navigationBarColor),
-            ContextCompat.getColor(this, R.color.app_navigationBarDarkColor)
-        ).apply {
-            duration = 200L // Тривалість анімації 200 мс
-            addUpdateListener { animator ->
-                val color = animator.animatedValue as Int
-
-                // Оновлюємо навігаційну панель
-                window.navigationBarColor = color
-            }
-        }.start()
-    }
-
-    private fun hideHiddenPanel() {
-        hiddenPanel.animate()
-            .alpha(0f)
-            .setDuration(200)
-            .withEndAction {
-                hiddenPanel.visibility = View.GONE
-            }
-            .start()
-
-        ValueAnimator.ofObject(
-            ArgbEvaluator(),
-            ContextCompat.getColor(this, R.color.app_statusBarDarkColor),
-            ContextCompat.getColor(this, R.color.app_statusBarColor)
-        ).apply {
-            duration = 200L // Тривалість анімації 200 мс
-            addUpdateListener { animator ->
-                val color = animator.animatedValue as Int
-
-                // Оновлюємо статус бар
-                window.statusBarColor = color
-            }
-        }.start()
-
-        ValueAnimator.ofObject(
-            ArgbEvaluator(),
-            ContextCompat.getColor(this, R.color.app_navigationBarDarkColor),
-            ContextCompat.getColor(this, R.color.app_navigationBarColor)
-        ).apply {
-            duration = 200L // Тривалість анімації 200 мс
-            addUpdateListener { animator ->
-                val color = animator.animatedValue as Int
-
-                // Оновлюємо навігаційну панель
-                window.navigationBarColor = color
-            }
-        }.start()
-    }
-
-    private fun showSeekbar() {
-        seekbarContainer.visibility = View.VISIBLE
-        seekbarContainer.animate()
-            .scaleY(1f)
-            .setDuration(200)
-            .start()
-    }
-
-    private fun hideSeekbar() {
-        seekbarContainer.animate()
-            .scaleY(0f)
-            .setDuration(200)
-            .withEndAction {
-                seekbarContainer.visibility = View.GONE
-            }
-            .start()
-    }
-
     private fun showSettings() {
-        showHiddenPanel()
+        uiAnimator.showHiddenPanel()
         settingsContent.visibility  = View.VISIBLE
     }
 
     private fun hideSettings() {
-        hideHiddenPanel()
+        uiAnimator.hideHiddenPanel()
         settingsContent.visibility = View.GONE
     }
 
     private fun showInfo() {
-        showHiddenPanel()
+        uiAnimator.showHiddenPanel()
         infoContent.visibility  = View.VISIBLE
     }
 
     private fun hideInfo() {
-        hideHiddenPanel()
+        uiAnimator.hideHiddenPanel()
         infoContent.visibility = View.GONE
     }
-
-    private fun showUpdateDialog() {
-        updateDialog.visibility = View.VISIBLE
-        updateDialog.animate()
-            .alpha(1f)
-            .setDuration(300)
-            .start()
-    }
-
-    private fun hideUpdateDialog() {
-        updateDialog.animate()
-            .alpha(0f)
-            .setDuration(300)
-            .withEndAction {
-                updateDialog.visibility = View.GONE
-            }
-            .start()
-    }
-
 
     @RequiresApi(Build.VERSION_CODES.Q)
     @SuppressLint("ClickableViewAccessibility")
@@ -632,14 +505,19 @@ class MainActivity : AppCompatActivity(){
                     when (event.action) {
                         MotionEvent.ACTION_DOWN -> {
                             viewModel.isPressed = !viewModel.isPressed
-                            alreadyClicked = !alreadyClicked
-                            if(viewModel.isPressed && alreadyClicked) {
-                                viewModel.handler.removeCallbacks(decrementRunnable)
-                                viewModel.handler.post(incrementRunnable)
-                            }
-                            else {
-                                viewModel.handler.removeCallbacks(incrementRunnable)
-                                viewModel.handler.post(decrementRunnable)
+
+                            if (viewModel.isPressed) {
+                                if (counterManager.isRunning(counterManager.decrement))
+                                    counterManager.remove(counterManager.decrement)
+
+                                if (!counterManager.isRunning(counterManager.increment))
+                                    counterManager.post(counterManager.increment)
+                            } else {
+                                if (!counterManager.isRunning(counterManager.decrement))
+                                    counterManager.post(counterManager.decrement)
+
+                                if (counterManager.isRunning(counterManager.increment))
+                                    counterManager.remove(counterManager.increment)
                             }
                             true
                         }
@@ -654,14 +532,18 @@ class MainActivity : AppCompatActivity(){
                     when (event.action) {
                         MotionEvent.ACTION_DOWN -> {
                             viewModel.isPressed = true
-                            viewModel.handler.removeCallbacks(decrementRunnable)
-                            viewModel.handler.post(incrementRunnable)
+
+                            counterManager.remove(counterManager.decrement)
+                            counterManager.post(counterManager.increment)
+
                             true
                         }
                         MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                             viewModel.isPressed = false
-                            viewModel.handler.removeCallbacks(incrementRunnable)
-                            viewModel.handler.post(decrementRunnable)
+
+                            counterManager.remove(counterManager.increment)
+                            counterManager.post(counterManager.decrement)
+
                             true
                         }
                         else -> false
@@ -669,9 +551,8 @@ class MainActivity : AppCompatActivity(){
                 }
                 ModeType.RANDOM -> {
 
-                    if (!viewModel.handler.hasCallbacks(randomRunnable)) {
-                        viewModel.handler.post(randomRunnable)
-                    }
+                    if (!counterManager.isRunning(counterManager.random))
+                        counterManager.post(counterManager.random)
 
                     false
                 }
@@ -703,17 +584,14 @@ class MainActivity : AppCompatActivity(){
         modeButton.setOnClickListener {
             resetPotuzhnometer()
 
-            if(seekbarContainer.isVisible){
-                hideSeekbar()
-            }
+            if(seekbarContainer.isVisible) uiAnimator.hideSeekbar()
 
-            if (viewModel.handler.hasCallbacks(randomRunnable)) {
-                viewModel.handler.removeCallbacks(randomRunnable)
-            }
-
-            if (!viewModel.handler.hasCallbacks(decrementRunnable)) {
-                viewModel.handler.post(decrementRunnable)
-            }
+            if (counterManager.isRunning(counterManager.random)) counterManager.remove(
+                counterManager.random
+            )
+            if (!counterManager.isRunning(counterManager.decrement)) counterManager.post(
+                counterManager.decrement
+            )
 
             // Оновлюємо значення ПРЯМО у ViewModel
             viewModel.modeType = ModeType.fromInt(
@@ -724,14 +602,14 @@ class MainActivity : AppCompatActivity(){
             modeButton.text = MODE_NAMES[viewModel.modeType.value]
 
             if(viewModel.modeType == ModeType.RANDOM){
-                viewModel.handler.post(randomRunnable)
+                counterManager.post(counterManager.random)
             }
 
             if(viewModel.modeType == ModeType.MANUAL){
-                if (viewModel.handler.hasCallbacks(decrementRunnable)) {
-                    viewModel.handler.removeCallbacks(decrementRunnable)
-                }
-                showSeekbar()
+                if(counterManager.isRunning(counterManager.decrement))
+                    counterManager.remove(counterManager.decrement)
+
+                uiAnimator.showSeekbar()
                 syncSeekBarCounter()
             }
         }
@@ -751,7 +629,7 @@ class MainActivity : AppCompatActivity(){
 
     private fun setupUpdateButton() {
         checkUpdButton.setOnClickListener() {
-            showUpdateDialog()
+            checkForUpdates()
         }
     }
 
@@ -762,7 +640,7 @@ class MainActivity : AppCompatActivity(){
         }
 
         updateDialog.setOnClickListener(){
-            hideUpdateDialog()
+            uiAnimator.hideUpdateDialog()
         }
     }
 
@@ -771,9 +649,6 @@ class MainActivity : AppCompatActivity(){
     }
 
     private fun syncSwitch(){
-
-        checkTheme()
-        /* switchDarkTheme.isChecked  = isDarkTheme*/
         switchAlertSound.isChecked = viewModel.playAlertSound
         switchSirenSound.isChecked = viewModel.playSirenSound
         switchExplosion.isChecked  = viewModel.playPotuzhnometrExplosion
@@ -810,10 +685,12 @@ class MainActivity : AppCompatActivity(){
         AppData.stopSirenSound()
 
         powerText.setTextColor(Color.WHITE)
-        updateBackgroundTheme()
-        resetSystemBars()
 
-        colorAnimator.cancel()
+        val isNightMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
+        uiAnimator.updateBackgroundTheme(isNightMode)
+        uiAnimator.resetSystemBars()
+
+        if(::colorAnimator.isInitialized) colorAnimator.cancel()
         viewModel.potuzhno = false
         viewModel.isExploded = false
     }
@@ -830,23 +707,6 @@ class MainActivity : AppCompatActivity(){
         syncButtonNames()
     }
 
-    private fun updateBackgroundTheme() {
-        val isNightMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
-        screenLayout.apply {
-            if (isNightMode) {
-                setBackgroundColor(ContextCompat.getColor(this@MainActivity, R.color.app_background))
-            } else {
-                background = ContextCompat.getDrawable(this@MainActivity, R.drawable.gradient_light)
-            }
-        }
-    }
-
-    private fun resetSystemBars() {
-        window.apply {
-            statusBarColor = ContextCompat.getColor(applicationContext, R.color.app_statusBarColor)
-            navigationBarColor = ContextCompat.getColor(applicationContext, R.color.app_navigationBarColor)
-        }
-    }
 
     @RequiresApi(Build.VERSION_CODES.Q)
     private fun startVideoPlayback(resId: Int) {
@@ -867,7 +727,7 @@ class MainActivity : AppCompatActivity(){
 
         videoView.setOnCompletionListener {
             viewModel.isExploded = true
-            viewModel.handler.post(decrementRunnable)
+            counterManager.post(counterManager.decrement)
             resetPotuzhnometer()
 
             videoContainer.removeAllViews()
@@ -880,15 +740,14 @@ class MainActivity : AppCompatActivity(){
     private fun resetPotuzhnometer(){
         viewModel.potuzhno = false
         viewModel.isPressed = false
-        alreadyClicked = false
         viewModel.targetCounter = 0
         seekBar.isEnabled = true
     }
 
     @SuppressLint("ResourceAsColor")
     private fun playFullscreenVideo() {
-        colorAnimator.cancel()
-        videoEnterAnimator.start()
+        if(::colorAnimator.isInitialized) colorAnimator.cancel()
+        if(::videoEnterAnimator.isInitialized) videoEnterAnimator.start()
     }
 
     private fun playExplosionSound() {
@@ -915,7 +774,7 @@ class MainActivity : AppCompatActivity(){
         viewModel.isSoundPlaying = true
 
         powerText.setTextColor("#EE4848".toColorInt())
-        colorAnimator.start()
+        if(::colorAnimator.isInitialized) colorAnimator.start()
         viewModel.isColorCleared = false
 
         val alert = alertSounds.random()
@@ -963,7 +822,7 @@ class MainActivity : AppCompatActivity(){
         viewModel.isSoundPlaying = false
         viewModel.sirenPlayer?.release()
         viewModel.sirenPlayer = null
-        viewModel.handler.post(decrementRunnable)
+        counterManager.post(counterManager.decrement)
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
@@ -977,94 +836,12 @@ class MainActivity : AppCompatActivity(){
             playFullscreenVideo()
         else{
             viewModel.isExploded = true
-            viewModel.handler.post(decrementRunnable)
+            counterManager.post(counterManager.decrement)
             resetPotuzhnometer()
 
             videoContainer.removeAllViews()
             videoContainer.visibility = View.GONE
         }
         viewModel.isExplosionInProgress = false
-    }
-
-
-    private val incrementRunnable = object : Runnable {
-        @RequiresApi(Build.VERSION_CODES.Q)
-        override fun run() {
-            if(viewModel.isPressed){
-                if (viewModel.counter in 0..99) {
-                    viewModel.counter++
-                    powerText.text = viewModel.counter.toString()
-                    updateUI()
-                    viewModel.handler.postDelayed(this, INCREMENT_SPEED[viewModel.sensType.value])
-                } else {
-                    if (!viewModel.potuzhno) {
-                        viewModel.potuzhno = true
-                        updateUI()
-                        playAlertAndExplode()
-                    }
-                }
-            }
-            else{
-                viewModel.handler.removeCallbacks(this)
-            }
-
-        }
-    }
-
-    private val decrementRunnable = object : Runnable {
-        override fun run() {
-            if (viewModel.isPressed && viewModel.isExploded) viewModel.isPressed = false
-
-            if (!viewModel.isPressed && viewModel.counter > 0 && !viewModel.isSoundPlaying) {
-                if (viewModel.isExploded) {
-                    viewModel.counter = 0
-                    syncSeekBarCounter()
-                } else {
-                    viewModel.counter--
-                }
-
-                resetAfterRelease()
-                updateUI()
-                viewModel.handler.postDelayed(this, DECREMENT_SPEED[viewModel.sensType.value])
-            } else {
-                viewModel.handler.removeCallbacks(this)
-            }
-
-        }
-    }
-
-    private val randomRunnable = object : Runnable {
-        @RequiresApi(Build.VERSION_CODES.Q)
-        override fun run() {
-
-            val step = Random.nextInt(2,8)
-            if (viewModel.counter != viewModel.targetCounter) {
-                // Плавне збільшення або зменшення
-                val diff = viewModel.targetCounter - viewModel.counter
-                viewModel.counter += when {
-                    diff > 0 -> min(step, diff)
-                    diff < 0 -> max(-step, diff)
-                    else -> 0
-                }
-                updateUI()
-            } else {
-                // Досягнуто цілі, встановлюємо нову
-                viewModel.targetCounter = Random.nextInt(0, 101)
-            }
-
-            if(viewModel.counter in 0..99){
-                viewModel.handler.postDelayed(this, RANDOM_SPEED[viewModel.sensType.value])
-            }
-            else{
-                viewModel.isPressed = true
-                viewModel.potuzhno = true
-                playAlertAndExplode()
-                viewModel.handler.removeCallbacks(this)
-            }
-        }
-    }
-
-    fun isUpdateAvailable(currentVersion: String, latestVersion: String): Boolean {
-        return currentVersion != latestVersion
     }
 }

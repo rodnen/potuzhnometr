@@ -48,14 +48,13 @@
 
     </RelativeLayout>
 
-    <FrameLayout
+    <RelativeLayout
         android:id="@+id/video_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="gone"
         android:background="#000000"
-        android:elevation="100dp">
-    </FrameLayout>
+        android:elevation="100dp"/>
 
     <androidx.cardview.widget.CardView
         android:id="@+id/cardView"
