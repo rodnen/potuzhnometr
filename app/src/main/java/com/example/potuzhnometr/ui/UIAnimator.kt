@@ -4,24 +4,29 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.ArgbEvaluator
 import android.animation.ValueAnimator
+import android.annotation.SuppressLint
 import android.app.Activity
-import android.content.res.Configuration
 import android.graphics.Color
-import android.os.Build
-import android.util.Log
 import android.view.View
-import android.widget.FrameLayout
 import android.widget.LinearLayout
+import android.widget.ProgressBar
 import android.widget.RelativeLayout
 import android.widget.TextView
-import androidx.annotation.RequiresApi
-import androidx.core.animation.addListener
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.toColorInt
 import com.airbnb.lottie.LottieAnimationView
 import com.airbnb.lottie.LottieDrawable
 import com.example.potuzhnometr.AppViewModel
 import com.example.potuzhnometr.R
+
+enum class DialogType (val value: Int) {
+    DEFAULT(0),
+    SUCCESS(1),
+    ERROR(2);
+    companion object {
+        fun fromInt(value: Int): DialogType? = entries.find { it.value == value }
+    }
+}
 
 class UIAnimator(
     private val viewModel: AppViewModel,
@@ -34,6 +39,8 @@ class UIAnimator(
     private val loadingAnimation: LottieAnimationView,
     private val updateDialog: View,
     private val updateMsg: TextView,
+    private val downloadButton: RelativeLayout,
+    private val progressBar: ProgressBar,
 ) {
 
     // ========== SYSTEM COLOR ANIMATIONS ==========
@@ -256,9 +263,16 @@ class UIAnimator(
         }
     }
 
-    fun showUpdateMessage(msg: String) {
+    @SuppressLint("ResourceAsColor")
+    fun showUpdateMessage(msg: String, type: DialogType = DialogType.DEFAULT) {
         stopLoadingAnimation()
 
+        val color = when (type) {
+            DialogType.SUCCESS -> ContextCompat.getColor(activity, R.color.app_success_textColor)
+            DialogType.ERROR -> ContextCompat.getColor(activity, R.color.app_error_textColor)
+            DialogType.DEFAULT -> ContextCompat.getColor(activity, R.color.app_textColor)
+        }
+        updateMsg.setTextColor(color)
         updateMsg.apply {
             layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
@@ -273,5 +287,29 @@ class UIAnimator(
             LinearLayout.LayoutParams.MATCH_PARENT,
             0
         )
+    }
+
+    fun showDownloadButton(onClick: () -> Unit) {
+        downloadButton.visibility = View.VISIBLE
+        downloadButton.setOnClickListener {
+            onClick()
+        }
+    }
+
+    fun hideDownloadButton() {
+        downloadButton.visibility = View.GONE
+    }
+
+    fun showUpdateProgress(progress: Int) {
+        progressBar.progress = progress
+    }
+
+    fun showProgressBar() {
+        progressBar.visibility = View.VISIBLE
+    }
+
+    fun hideProgressBar() {
+        progressBar.visibility = View.GONE
+        progressBar.progress = 0
     }
 }

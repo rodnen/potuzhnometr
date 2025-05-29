@@ -4,7 +4,6 @@ import android.graphics.Color
 import android.media.MediaPlayer
 import android.os.Handler
 import android.os.Looper
-import androidx.core.graphics.toColorInt
 import androidx.lifecycle.ViewModel
 
 enum class ModeType (val value: Int) {

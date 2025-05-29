@@ -58,6 +58,35 @@
                 android:paddingBottom="5dp"
                 android:textAlignment="center"/>
 
+            <ProgressBar
+                style="@android:style/Widget.ProgressBar.Horizontal"
+                android:id="@+id/progress_bar"
+                android:layout_width="match_parent"
+                android:layout_height="8dp"
+                android:layout_marginVertical="12dp"
+                android:background="@drawable/progress_bar"
+                android:progressDrawable="@drawable/progress_bar"
+                android:visibility="gone"
+                android:max="100"
+                android:progress="0" />
+
+            <RelativeLayout
+                android:id="@+id/download_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:layout_marginTop="12dp"
+                android:visibility="gone"
+                android:background="@drawable/list_element">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@android:color/transparent"
+                    android:textAlignment="center"
+                    android:textColor="@color/app_textColor"
+                    android:text="Оновити"/>
+            </RelativeLayout>
+
         </LinearLayout>
 
     </RelativeLayout>

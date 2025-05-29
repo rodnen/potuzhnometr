@@ -1,10 +1,8 @@
 package com.example.potuzhnometr
 
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
-import android.animation.ArgbEvaluator
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
+import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
@@ -13,13 +11,13 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.ProgressBar
 import android.widget.RelativeLayout
 import android.widget.SeekBar
 import android.widget.Switch
@@ -27,19 +25,16 @@ import android.widget.TextView
 import android.widget.Toast
 import android.widget.VideoView
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.core.graphics.toColorInt
 import androidx.core.net.toUri
-import kotlin.random.Random
-import kotlin.math.min
-import kotlin.math.max
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
-import androidx.activity.viewModels
 import com.airbnb.lottie.LottieAnimationView
 import com.example.potuzhnometr.counter.CounterManager
 import com.example.potuzhnometr.ui.UIAnimator
@@ -47,10 +42,13 @@ import com.example.potuzhnometr.updater.UpdateChecker
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import androidx.core.app.ActivityCompat
+import com.example.potuzhnometr.ui.DialogType
 
 class MainActivity : AppCompatActivity(){
     private lateinit var counterManager: CounterManager
     private lateinit var uiAnimator: UIAnimator
+    private lateinit var updateChecker: UpdateChecker
 
     private val viewModel: AppViewModel by viewModels()
     private val barViews = mutableListOf<View>()
@@ -108,8 +106,11 @@ class MainActivity : AppCompatActivity(){
     // Settings views
     private lateinit var settingsContent: RelativeLayout
     private lateinit var settingsButton: ImageView
+    @SuppressLint("UseSwitchCompatOrMaterialCode")
     private lateinit var switchAlertSound: Switch
+    @SuppressLint("UseSwitchCompatOrMaterialCode")
     private lateinit var switchSirenSound: Switch
+    @SuppressLint("UseSwitchCompatOrMaterialCode")
     private lateinit var switchExplosion: Switch
 
     // Info
@@ -119,6 +120,8 @@ class MainActivity : AppCompatActivity(){
     private lateinit var checkUpdButton: RelativeLayout
     private lateinit var updateDialog: FrameLayout
     private lateinit var updateMsg: TextView
+    private lateinit var downloadButton: RelativeLayout
+    private lateinit var progressBar: ProgressBar
 
     // Animation
     private lateinit var colorAnimator : ValueAnimator
@@ -287,11 +290,20 @@ class MainActivity : AppCompatActivity(){
         uiAnimator.startLoadingAnimation()
         uiAnimator.showUpdateDialog()
 
-        UpdateChecker(
+        updateChecker = UpdateChecker(
             context = this,
-            onUpdateAvailable = { latestVersion ->
+            onUpdateAvailable = {  version, downloadUrl ->
                 runOnUiThread {
-                    uiAnimator.showUpdateMessage("Доступна нова версія: $latestVersion")
+                    uiAnimator.showUpdateMessage("Доступна нова версія: $version")
+                    uiAnimator.showDownloadButton {
+                        if (updateChecker.hasStoragePermission()) {
+                            updateChecker.startDownload()
+                            uiAnimator.showProgressBar()
+                            uiAnimator.hideDownloadButton()
+                        } else {
+                            updateChecker.requestStoragePermission(this)
+                        }
+                    }
                 }
             },
             onUpToDate = { message ->
@@ -301,10 +313,23 @@ class MainActivity : AppCompatActivity(){
             },
             onError = { errorMessage ->
                 runOnUiThread {
-                    uiAnimator.showUpdateMessage(errorMessage)
+                    uiAnimator.showUpdateMessage(errorMessage, DialogType.ERROR)
+                }
+            },
+            onProgress = { progress ->
+                runOnUiThread {
+                    uiAnimator.showUpdateProgress(progress)
+                }
+            },
+            onSuccess = {
+                runOnUiThread {
+                    uiAnimator.showUpdateMessage("Нова версія завантажена до папки \"Downloads\"", DialogType.SUCCESS)
+                    uiAnimator.hideProgressBar()
                 }
             }
-        ).check()
+        )
+
+        updateChecker.check()
     }
 
     private fun initViews() {
@@ -335,7 +360,9 @@ class MainActivity : AppCompatActivity(){
         updateDialog = findViewById(R.id.update_dialog)
         checkUpdButton = findViewById(R.id.check_updates)
         updateMsg = findViewById(R.id.update_msg)
+        downloadButton = findViewById(R.id.download_button)
         loadingAnimation = findViewById(R.id.loadingAnimation)
+        progressBar = findViewById(R.id.progress_bar)
     }
 
 
@@ -351,7 +378,9 @@ class MainActivity : AppCompatActivity(){
             videoContainer = videoContainer,
             loadingAnimation = loadingAnimation,
             updateDialog = updateDialog,
-            updateMsg = updateMsg
+            updateMsg = updateMsg,
+            downloadButton = downloadButton,
+            progressBar = progressBar
         )
         colorAnimator = uiAnimator.createColorAnimator()
         videoEnterAnimator = uiAnimator.createVideoEnterAnimator {

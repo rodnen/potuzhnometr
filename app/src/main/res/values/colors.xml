@@ -11,6 +11,9 @@
     <color name="app_navigationBarDarkColor">#2C2C20</color>
 
     <color name="app_textColor">#858585</color>
+    <color name="app_success_textColor">#6BB16C</color>
+    <color name="app_error_textColor">#E63E3E</color>
+
     <color name="app_iconColor">#FFFFFF</color>
 
     <color name="colorOn">#00ff00</color>

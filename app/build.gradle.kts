@@ -41,10 +41,10 @@ android {
         outputs.configureEach {
             val apkOutput = this as BaseVariantOutputImpl
             if (bType == "release") {
-                apkOutput.outputFileName = "${appName}_App_v${vName}.apk"
+                apkOutput.outputFileName = "${appName}App_v${vName}.apk"
             }
             if (bType == "debug") {
-                apkOutput.outputFileName = "${appName}_AppDev_v${vName}.apk"
+                apkOutput.outputFileName = "${appName}AppDev_v${vName}.apk"
             }
         }
     }
